@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>Indoor Reality POC</title>
+
+  <link rel="stylesheet" href="https://js.arcgis.com/4.3/esri/css/main.css">
+  <script src="https://js.arcgis.com/4.3/"></script>
+  <link rel="stylesheet" href="https://s3-us-west-1.amazonaws.com/patterns.esri.com/files/calcite-web/1.0.0-rc.6/css/calcite-web.min.css">
+
+  <style>
+    html,
+    body,
+    #viewDiv {
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      width: 100%;
+    }
+    #optionsDiv {
+      width: 250px;
+      padding: 0 12px 0 12px;
+      background-color: white;
+      padding: 10px;
+    }
+  </style>
+  <script type="text/javascript" src="layerconfig.js"></script>
+  <script>
+    require([
+      "esri/views/SceneView",
+      "esri/WebScene",
+      "esri/tasks/support/Query",
+      "esri/tasks/QueryTask",
+      "dojo/on",
+      "dojo/dom",
+      "dojo/domReady!"
+    ], function(
+      SceneView, WebScene, Query, QueryTask, on, dom
+    ) {
+
+      var titleDiv = dom.byId("titleDiv");
+
+      var scene = new WebScene({
+        portalItem: { // autocasts as new PortalItem()
+          id: "728c4f76c7c747c58bfbeefd61e79490"
+        }
+      });
+
+      var view = new SceneView({
+        map: scene,
+        container: "viewDiv"
+      });
+
+      view.then(function() {
+        var poseLyr = scene.layers.find(function(l) {
+          return l.title === "Poses";
+        });
+        poseLyr.outFields = ["*"]
+        view.whenLayerView(poseLyr)
+          .then(function(poseLyrView) {
+            view.on("double-click", function(event) {
+              const screenPoint = {
+                x: event.x,
+                y: event.y
+              }
+              view.hitTest(screenPoint)
+                .then(function(response) {
+                  if(!response.results[0].graphic) return;
+                  const atrs = response.results[0].graphic.attributes
+                  const id = atrs.acquisitionId
+                  const pose = atrs.poseId
+                  const url = "http://esri.indoorreality.com/esri-viewer/" + id +"/" + pose
+                  window.open(url, "_self")
+                })
+            })
+          })
+      })
+
+
+      function getOpacity(scale, title){
+        if(!layerConfig[title] || !layerConfig[title].opcRange){
+          return null
+        }
+        const range = layerConfig[title].opcRange
+        const opc = (scale - range[1])/(range[0] - range[1])
+        return Math.min(Math.max(opc, 0), 1)
+      }
+      var viewHandle = view.watch("scale", (newVal) => {
+        scene.layers.forEach((lyr) => {
+          const opc = getOpacity(view.scale, lyr.title)
+          if(opc === null) return;
+          if(opc < 0.02){
+            lyr.visible = false
+          }
+          else{
+            lyr.visible = true
+            lyr.opacity = opc
+          }
+        })
+      })
+
+      function showFloors(evt) {
+        var floorQuery = evt.target.value;
+        scene.layers.forEach(function(lyr) {
+          const config = layerConfig[lyr.title]
+          if (config && config.hasFloorAtr) {
+            lyr.definitionExpression = floorQuery;
+          }
+        });
+      }
+      on(dom.byId("floorSelect"), "change", showFloors);
+
+      view.ui.add(dom.byId("optionsDiv"), {
+        position: "top-right",
+        index: 0
+      });
+    });
+  </script>
+</head>
+
+<body>
+  <div id="viewDiv"></div>
+  <div id="optionsDiv">
+    <div><b>Filter interior floor:</b>
+      <select id="floorSelect">
+        <option value="1=1">All</option>
+        <option value="Floor = -1">-1</option>
+        <option value="Floor = 1">1</option>
+        <option value="Floor = 2">2</option>
+        <option value="Floor = 3">3</option>
+        <option value="Floor = 4">4</option>
+        <option value="Floor = 5">5</option>
+        <option value="Floor = 6">6</option>
+        <option value="Floor = 7">7</option>
+        <option value="Floor = 8">8</option>
+        <option value="Floor = 9">9</option>
+        <option value="Floor = 10">10</option>
+        <option value="Floor = 11">11</option>
+        <option value="Floor = 12">12</option>
+        <option value="Floor = 13">13</option>
+      </select>
+    </div>
+  </div>
+</body>
+
+</html>
