@@ -12,15 +12,15 @@ const layerConfig = {
     hasFloorAtr: false
   },
   "Doors": {
-    opcRange: [300, -50],
+    opcRange: [300, -100],
     hasFloorAtr: true
   },
   "Floors": {
-    opcRange: [300, -50],
+    opcRange: [300, -100],
     hasFloorAtr: true
   },
   "Indoor Walls": {
-    opcRange: [300, -50],
+    opcRange: [300, -100],
     hasFloorAtr: true
   }
 }
