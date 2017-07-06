@@ -133,6 +133,7 @@
               view.hitTest(screenPoint)
                 .then(function(response) {
                   if(!response.results[0].graphic) return;
+                  event.stopPropagation()
                   const atrs = response.results[0].graphic.attributes
                   const id = atrs.acquisitionId
                   const pose = atrs.poseId
@@ -185,14 +186,6 @@
       }
       on(dom.byId("floorSelect"), "change", showFloors);
 
-      var homeBtn = new Home({
-        view: view
-      });
-      view.ui.add(homeBtn, {
-        position: "top-left",
-        index: 0
-      });
-
       var slideExpand = new Expand({
         view: view,
         content: dom.byId("slidesDiv"),
@@ -220,6 +213,12 @@
       });
       view.ui.add(filterExpand, "top-right");
 
+      var homeBtn = new Home({
+        view: view
+      });
+      view.ui.add(homeBtn, {
+        position: "top-right"
+      });
 
     });
   </script>
@@ -228,7 +227,7 @@
 <body>
   <div id="viewDiv"></div>
   <div id="optionsDiv">
-    <div><b>Filter interior floor:</b>
+    <div><b>Filter Interior Floor:</b>
       <select id="floorSelect">
         <option value="1=1">All</option>
         <option value="Floor = -1">-1</option>
