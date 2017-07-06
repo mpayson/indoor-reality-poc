@@ -1,2 +1,2 @@
-# indoor-reality-poc
-POC with Indoor Reality
+# Indoor Reality POC
+Live demo: https://mpayson.github.io/indoor-reality-poc/
