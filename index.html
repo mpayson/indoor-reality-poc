@@ -5,8 +5,8 @@
   <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
   <title>Indoor Reality POC</title>
 
-  <link rel="stylesheet" href="https://js.arcgis.com/4.3/esri/css/main.css">
-  <script src="https://js.arcgis.com/4.3/"></script>
+  <link rel="stylesheet" href="https://js.arcgis.com/4.4/esri/css/main.css">
+  <script src="https://js.arcgis.com/4.4/"></script>
   <link rel="stylesheet" href="https://s3-us-west-1.amazonaws.com/patterns.esri.com/files/calcite-web/1.0.0-rc.6/css/calcite-web.min.css">
 
   <style>
@@ -24,8 +24,39 @@
       background-color: white;
       padding: 10px;
     }
+    #slidesDiv {
+      background-color: white;
+      opacity: 0.9;
+      color: black;
+      padding: 10px;
+      visibility: hidden;
+      bottom: 20px;
+      overflow-y: auto;
+      text-align: center;
+      height: 260px;
+    }
+
+    #slidesDiv .slide {
+      /* Show cursor as pointer when on a slide */
+      cursor: pointer;
+      margin-bottom: 6px;
+    }
+
+    #slidesDiv .slide .title {
+      /* Center the title text */
+      text-align: center;
+    }
+    /* Draw active slide with a nice border around the thumbnail */
+
+    #slidesDiv .slide.active img {
+      box-shadow: 0px 0px 12px black;
+      border-style: solid;
+      border-width: thin;
+      border-color: black;
+    }
   </style>
   <script type="text/javascript" src="layerconfig.js"></script>
+  <script type="text/javascript" src="utils.js"></script>
   <script>
     require([
       "esri/views/SceneView",
@@ -33,11 +64,16 @@
       "esri/tasks/support/Query",
       "esri/tasks/QueryTask",
       "esri/widgets/LayerList",
+      "esri/widgets/Home",
+      "esri/widgets/Expand",
+      "dojo/dom-construct",
+      "dojo/dom-class",
+      "dojo/query",
       "dojo/on",
       "dojo/dom",
       "dojo/domReady!"
     ], function(
-      SceneView, WebScene, Query, QueryTask, LayerList, on, dom
+      SceneView, WebScene, Query, QueryTask, LayerList, Home, Expand, domConstruct, domClass, query, on, dom
     ) {
 
       var titleDiv = dom.byId("titleDiv");
@@ -53,11 +89,41 @@
         container: "viewDiv"
       });
 
+      function createSlideUI(slide, placement) {
+        var slideElement = domConstruct.create("div", {
+          id: slide.id,
+          className: "slide"
+        });
+        var position = placement ? placement : "last";
+        domConstruct.place(slideElement, "slidesDiv", position);
+        domConstruct.create("div", {
+          // Place the title of the slide in the <div> element
+          textContent: slide.title.text,
+          className: "title"
+        }, slideElement);
+        domConstruct.create("img", {
+          src: slide.thumbnail.url,
+          title: slide.title.text
+        }, slideElement);
+        on(slideElement, "click", function() {
+          query(".slide").forEach(function(node) {
+            domClass.remove(node, "active");
+          });
+          domClass.add(slideElement, "active");
+          slide.applyTo(view);
+        });
+      }
+
       view.then(function() {
         var poseLyr = scene.layers.find(function(l) {
           return l.title === "Poses";
         });
         poseLyr.outFields = ["*"]
+
+        dom.byId("slidesDiv").style.visibility = "visible"
+        const slides = scene.presentation.slides
+        slides.forEach(createSlideUI)
+
         view.whenLayerView(poseLyr)
           .then(function(poseLyrView) {
             view.on("double-click", function(event) {
@@ -78,7 +144,7 @@
           })
       })
 
-      function getOpacity(scale, title){
+      function getOpacity(scale, title, layerConfig){
         if(!layerConfig[title] || !layerConfig[title].opcRange){
           return null
         }
@@ -86,17 +152,24 @@
         const opc = (scale - range[1])/(range[0] - range[1])
         return Math.min(Math.max(opc, 0), 1)
       }
+      var scaleVisSet = new Set()
       var viewHandle = view.watch("scale", (newVal) => {
         scene.layers.forEach((lyr) => {
-          const opc = getOpacity(view.scale, lyr.title)
+          const title = lyr.title
+          const opc = getOpacity(view.scale, title, layerConfig)
           if(opc === null) return;
           if(opc < 0.02){
             lyr.visible = false
             lyr.listMode = "hide"
+            scaleVisSet.add(title)
           }
           else{
-            lyr.visible = true
-            lyr.listMode = "show"
+            //only show if previously hidden by opacity value
+            if(scaleVisSet.has(title)){
+              lyr.visible = true
+              lyr.listMode = "show"
+              scaleVisSet.delete(title)
+            }
             lyr.opacity = opc
           }
         })
@@ -113,17 +186,42 @@
       }
       on(dom.byId("floorSelect"), "change", showFloors);
 
-      view.ui.add(dom.byId("optionsDiv"), {
-        position: "top-right",
-        index: 0
-      });
-      var layerList = new LayerList({
+      var homeBtn = new Home({
         view: view
       });
-
-      view.ui.add(layerList, {
-        position: "bottom-right"
+      view.ui.add(homeBtn, {
+        position: "top-left",
+        index: 0
       });
+
+      var slideExpand = new Expand({
+        view: view,
+        content: dom.byId("slidesDiv"),
+        expandIconClass: "esri-icon-media",
+        expanded: true
+      })
+      view.ui.add(slideExpand, "top-right")
+
+      var layerList = new LayerList({
+        view: view,
+        container: document.createElement("div")
+      });
+
+      var listExpand = new Expand({
+        view: view,
+        content: layerList.container,
+        expandIconClass: "esri-icon-layer-list"
+      });
+      view.ui.add(listExpand, "top-right");
+
+      var filterExpand = new Expand({
+        view: view,
+        content: dom.byId("optionsDiv"),
+        expandIconClass: "esri-icon-filter"
+      });
+      view.ui.add(filterExpand, "top-right");
+
+
     });
   </script>
 </head>
@@ -150,6 +248,7 @@
         <option value="Floor = 13">13</option>
       </select>
     </div>
+    <div id="slidesDiv"></div>
   </div>
 </body>
 
