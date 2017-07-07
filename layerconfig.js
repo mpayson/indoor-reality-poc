@@ -24,7 +24,7 @@ const layerConfig = {
     hasFloorAtr: true
   },
   "Indoor Walls": {
-    opcRange: [175, -50],
+    opcRange: [175, -75],
     hasFloorAtr: true
   },
   "Poses": {
