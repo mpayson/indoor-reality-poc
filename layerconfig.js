@@ -1,6 +1,6 @@
 const layerConfig = {
   "Ceilings": {
-    opcRange: [750, 350],
+    opcRange: [350, 175],
     hasFloorAtr: true
   },
   "Windows": {
@@ -8,6 +8,10 @@ const layerConfig = {
     hasFloorAtr: false,
   },
   "Outdoor Walls":{
+    opcRange: [750, 350],
+    hasFloorAtr: false
+  },
+  "Roof": {
     opcRange: [750, 350],
     hasFloorAtr: false
   },
@@ -22,5 +26,8 @@ const layerConfig = {
   "Indoor Walls": {
     opcRange: [175, -50],
     hasFloorAtr: true
+  },
+  "Poses": {
+      hasFloorAtr: true
   }
 }

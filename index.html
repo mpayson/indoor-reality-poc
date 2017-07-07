@@ -8,54 +8,8 @@
   <link rel="stylesheet" href="https://js.arcgis.com/4.4/esri/css/main.css">
   <script src="https://js.arcgis.com/4.4/"></script>
   <link rel="stylesheet" href="https://s3-us-west-1.amazonaws.com/patterns.esri.com/files/calcite-web/1.0.0-rc.6/css/calcite-web.min.css">
+  <link rel="stylesheet" href="styles.css">
 
-  <style>
-    html,
-    body,
-    #viewDiv {
-      padding: 0;
-      margin: 0;
-      height: 100%;
-      width: 100%;
-    }
-    #optionsDiv {
-      width: 250px;
-      padding: 0 12px 0 12px;
-      background-color: white;
-      padding: 10px;
-    }
-    #slidesDiv {
-      background-color: white;
-      opacity: 0.9;
-      color: black;
-      padding: 10px;
-      visibility: hidden;
-      bottom: 20px;
-      overflow-y: auto;
-      text-align: center;
-      height: 350px;
-      width: 150px;
-    }
-
-    #slidesDiv .slide {
-      /* Show cursor as pointer when on a slide */
-      cursor: pointer;
-      margin-bottom: 6px;
-    }
-
-    #slidesDiv .slide .title {
-      /* Center the title text */
-      text-align: left;
-    }
-    /* Draw active slide with a nice border around the thumbnail */
-
-    #slidesDiv .slide.active img {
-      box-shadow: 0px 0px 12px black;
-      border-style: solid;
-      border-width: thin;
-      border-color: black;
-    }
-  </style>
   <script type="text/javascript" src="layerconfig.js"></script>
   <script>
     require([
@@ -80,13 +34,22 @@
 
       var scene = new WebScene({
         portalItem: { // autocasts as new PortalItem()
-          id: "728c4f76c7c747c58bfbeefd61e79490"
+          id: "3eea1a96297e4287b958e934806d10d5"
         }
       });
 
       var view = new SceneView({
         map: scene,
-        container: "viewDiv"
+        container: "viewDiv",
+        viewingMode: "local",
+        constraints: {
+          collision: {
+            enabled: false
+          },
+          tilt: {
+            max: 179.99
+          }
+        }
       });
 
       function createSlideUI(slide, placement) {
@@ -119,6 +82,7 @@
         });
         poseLyr.outFields = ["*"]
 
+        dom.byId("optionsDiv").style.visibility = "visible"
         dom.byId("slidesDiv").style.visibility = "visible"
         const slides = scene.presentation.slides
         slides.forEach(createSlideUI)
@@ -158,7 +122,7 @@
           const title = lyr.title
           const opc = getOpacity(view.scale, title, layerConfig)
           if(opc === null) return;
-          if(opc < 0.02){
+          if(opc < 0.01){
             lyr.visible = false
             lyr.listMode = "hide"
             scaleVisSet.add(title)
@@ -186,40 +150,45 @@
       }
       on(dom.byId("floorSelect"), "change", showFloors);
 
+      var activeExpand = null
+      function setActiveExpand(nV, oV, expProp, expObj){
+        if(nV === true && expObj !== activeExpand){
+          activeExpand.expanded = false
+          activeExpand = expObj
+        }
+      }
+
       var slideExpand = new Expand({
         view: view,
         content: dom.byId("slidesDiv"),
         expandIconClass: "esri-icon-media",
         expanded: true
       })
-      view.ui.add(slideExpand, "top-right")
-
+      activeExpand = slideExpand
       var layerList = new LayerList({
         view: view,
         container: document.createElement("div")
       });
-
       var listExpand = new Expand({
         view: view,
         content: layerList.container,
         expandIconClass: "esri-icon-layer-list"
       });
-      view.ui.add(listExpand, "top-right");
-
       var filterExpand = new Expand({
         view: view,
         content: dom.byId("optionsDiv"),
         expandIconClass: "esri-icon-filter"
       });
-      view.ui.add(filterExpand, "top-right");
+      
+      [slideExpand, listExpand, filterExpand].forEach((exp) =>
+        exp.watch("expanded", setActiveExpand)
+      )
 
       var homeBtn = new Home({
         view: view
       });
-      view.ui.add(homeBtn, {
-        position: "top-right"
-      });
 
+      view.ui.add([slideExpand, listExpand, filterExpand, homeBtn], "top-right");
     });
   </script>
 </head>
@@ -246,8 +215,8 @@
         <option value="Floor = 13">13</option>
       </select>
     </div>
-    <div id="slidesDiv"></div>
   </div>
+  <div id="slidesDiv"></div>
 </body>
 
 </html>
