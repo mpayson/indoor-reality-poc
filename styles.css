@@ -15,8 +15,7 @@
     }
     #slidesDiv {
       background-color: white;
-      opacity: 0.9;
-      color: black;
+      color: dimgray;
       padding: 10px;
       visibility: hidden;
       bottom: 20px;
