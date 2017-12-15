@@ -4,6 +4,17 @@
 
 Live demo: https://mpayson.github.io/indoor-reality-poc/
 
+## Using
+
+*Note, this has only been tested on Chrome*
+
+#### On the Web
+- Open the [demo](https://mpayson.github.io/indoor-reality-poc/) and allow [mixed content](https://stackoverflow.com/questions/18321032/how-to-get-chrome-to-allow-mixed-content). Indoor Reality viewer is loaded over `http`
+
+#### Locally
+- `git clone https://github.com/mpayson/indoor-reality-poc.git`
+- Double click the .html!
+
 ## What We Did
 
 1. Pulled Revit data [into ArcGIS](https://blogs.esri.com/esri/arcgis/2016/09/22/bim-gis-integration-with-ifc/) via [Pro](https://pro.arcgis.com/en/pro-app/)
