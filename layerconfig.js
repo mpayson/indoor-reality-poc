@@ -1,3 +1,5 @@
+// Configure opacity range of scene layers
+// and whether or not each layer can be filtered by floor
 const layerConfig = {
   "Ceilings": {
     opcRange: [350, 175],
