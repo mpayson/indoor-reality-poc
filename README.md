@@ -13,7 +13,7 @@ Live demo: https://mpayson.github.io/indoor-reality-poc/
 
 #### Locally
 - `git clone https://github.com/mpayson/indoor-reality-poc.git`
-- Double click the .html!
+- Double click the `.html`!
 
 ## What We Did
 
@@ -22,7 +22,3 @@ Live demo: https://mpayson.github.io/indoor-reality-poc/
 3. [Imported OSM data](http://cehelp.esri.com/help/index.jsp?topic=/com.procedural.cityengine.help/html/manual/portal/getmapdata.html) into City Engine, [exported](http://cehelp.esri.com/help/index.jsp?topic=/com.procedural.cityengine.help/html/manual/export/export_formats_fgdb.html) to Pro, [transformed](http://pro.arcgis.com/en/pro-app/tool-reference/data-management/project.htm) to projected coordinate system, and converted to [local scene](http://pro.arcgis.com/en/pro-app/help/mapping/map-authoring/scenes.htm)
 4. [Published](http://pro.arcgis.com/en/pro-app/help/sharing/overview/web-scene-layer.htm) scene layers to [ArcGIS Online](http://www.esri.com/software/arcgis/arcgisonline) and created a [Web Scene](https://doc.arcgis.com/en/arcgis-online/reference/what-is-web-scene.htm)
 5. Used the [ArcGIS JS API](https://developers.arcgis.com/javascript/) to build this [POC](https://mpayson.github.io/indoor-reality-poc/)
-
-## Notes
-
-- Only tried in Chrome, not tested, but definitely [submit an issue](https://github.com/mpayson/indoor-reality-poc/issues) if you have Qs!
